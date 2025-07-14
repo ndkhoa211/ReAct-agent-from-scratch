@@ -3,6 +3,7 @@ from langchain.agents import tool
 from langchain.prompts import PromptTemplate
 from langchain.tools.render import render_text_description
 from langchain_openai import ChatOpenAI
+from langchain.agents.output_parsers import ReActSingleInputOutputParser
 
 load_dotenv()
 
@@ -51,16 +52,16 @@ if __name__ == "__main__":
     prompt = PromptTemplate.from_template(template=template).partial(tools=render_text_description(tools), # cannot apply tool list directly, LLM only receives text inputs
                                                                      tool_names=", ".join([t.name for t in tools]))
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", # doesn't work on later models like "gpt-4.1-mini`
+    llm = ChatOpenAI(model="gpt-4.1-mini", # doesn't work on default model "gpt-3.5-turbo`
                      temperature=0.0,
                      stop=["\nObservation"], # stop generating text at this token
                      )
 
-    agent = {"input": lambda x: x["input"]} | prompt | llm
+    agent = {"input": lambda x: x["input"]} | prompt | llm | ReActSingleInputOutputParser()
     # now populate the input placeholder
     # lambda function accessing the values of dict
 
     # invoke the chain
     res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
-    print(res.content)
+    print(res)
 
