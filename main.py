@@ -4,6 +4,9 @@ from langchain.prompts import PromptTemplate
 from langchain.tools.render import render_text_description
 from langchain_openai import ChatOpenAI
 from langchain.agents.output_parsers import ReActSingleInputOutputParser
+from typing import Union, List
+from langchain.schema import AgentAction, AgentFinish
+from langchain.tools import Tool
 
 load_dotenv()
 
@@ -16,6 +19,12 @@ def get_text_length(text: str) -> int:
     print(f"get_text_length enter with {text=}")
     text = text.strip("'\n").strip('"')  # strip away non-alphabetic characters
     return len(text)
+
+def find_tool_by_names(tools: List[Tool], tool_name: str) -> Tool:
+    for tool in tools:
+        if tool.name == tool_name:
+            return tool
+    raise ValueError(f"Tool with name {tool_name} not found...")
 
 
 if __name__ == "__main__":
@@ -62,6 +71,21 @@ if __name__ == "__main__":
     # lambda function accessing the values of dict
 
     # invoke the chain
-    res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
-    print(res)
+    # res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
+    # print(res)
+    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
+        {"input": "what is the text length of 'Langchain Expression Language' in characters?"}
+    )
+    print(agent_step)
+
+    if isinstance(agent_step, AgentAction):
+        # extrapolate the tool to use
+        tool_name = agent_step.tool
+        tool_to_use = find_tool_by_names(tools, tool_name)
+        # run the tool
+        tool_input = agent_step.tool_input
+
+        observation = tool_to_use.func(str(tool_input))
+        print(f"{observation}")
+
 
