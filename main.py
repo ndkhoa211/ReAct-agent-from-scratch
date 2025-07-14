@@ -85,44 +85,29 @@ if __name__ == "__main__":
     # now populate the input placeholder
     # lambda function accessing the values of dict
 
-    # invoke the chain
-    # res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
-    # print(res)
-    # ─── first turn ──────────────────────────────────────────────────────────────────
-    # print("=== agent_scratchpad BEFORE 1st LLM call ===")
-    # print(format_log_to_str(intermediate_steps))
-    # print("============================================")
-    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
-        {
-            "input": "what is the text length of 'Langchain Expression Language' in characters?",
-            "agent_scratchpad": intermediate_steps,
-        }
-    )
-    print(f"agent_step={agent_step}")
+    # create a while loop
+    agent_step = ""
+    while not isinstance(agent_step, AgentFinish):
+        agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
+            {
+                "input": "what is the text length of 'Langchain Expression Language' in characters?",
+                "agent_scratchpad": intermediate_steps,
+            }
+        )
+        print(f"agent_step={agent_step}")
 
-    if isinstance(agent_step, AgentAction):
-        print(f"*****\n*****agent_step is an instance of AgentAction*****\n*****")
-        # extrapolate the tool to use
-        tool_name = agent_step.tool
-        tool_to_use = find_tool_by_names(tools, tool_name)
-        # run the tool
-        tool_input = agent_step.tool_input
+        if isinstance(agent_step, AgentAction):
+            print(f"*****\n*****agent_step is an instance of AgentAction*****\n*****")
+            # extrapolate the tool to use
+            tool_name = agent_step.tool
+            tool_to_use = find_tool_by_names(tools, tool_name)
+            # run the tool
+            tool_input = agent_step.tool_input
 
-        observation = tool_to_use.func(str(tool_input))
-        print(f"{observation}")
-        intermediate_steps.append((agent_step, str(observation)))
+            observation = tool_to_use.func(str(tool_input))
+            print(f"{observation}")
+            intermediate_steps.append((agent_step, str(observation)))
 
-    # invoke the chain
-    # ─── second turn ─────────────────────────────────────────────────────────────────
-    # print("=== agent_scratchpad BEFORE 2nd LLM call ===")
-    # print(format_log_to_str(intermediate_steps))
-    # print("============================================")
-    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
-        {
-            "input": "what is the text length of 'Langchain Expression Language' in characters?",
-            "agent_scratchpad": intermediate_steps,
-        }
-    )
 
     if isinstance(agent_step, AgentFinish):
         print(f"*****\n*****agent_step is an instance of AgentFinish*****\n*****")
