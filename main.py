@@ -7,6 +7,7 @@ from langchain.agents.output_parsers import ReActSingleInputOutputParser
 from typing import Union, List
 from langchain.schema import AgentAction, AgentFinish
 from langchain.tools import Tool
+from langchain.agents.format_scratchpad import format_log_to_str
 
 load_dotenv()
 
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     Begin!
 
     Question: {input}
-    Thought:
+    Thought: {agent_scratchpad}
     """
 
     # we only partially initialize the prompt with `tools` and `tool_names`
@@ -66,7 +67,18 @@ if __name__ == "__main__":
                      stop=["\nObservation"], # stop generating text at this token
                      )
 
-    agent = {"input": lambda x: x["input"]} | prompt | llm | ReActSingleInputOutputParser()
+    # create an empty list to keep track of the history of our agent
+    intermediate_steps = []
+
+    agent = (
+            {
+                "input": lambda x: x["input"],
+                "agent_scratchpad": lambda x: format_log_to_str(x["agent_scratchpad"]),
+            }
+            | prompt
+            | llm
+            | ReActSingleInputOutputParser()
+    )
     # now populate the input placeholder
     # lambda function accessing the values of dict
 
@@ -74,11 +86,15 @@ if __name__ == "__main__":
     # res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
     # print(res)
     agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
-        {"input": "what is the text length of 'Langchain Expression Language' in characters?"}
+        {
+            "input": "what is the text length of 'Langchain Expression Language' in characters?",
+            "agent_scratchpad": intermediate_steps,
+        }
     )
-    print(agent_step)
+    print(f"agent_step={agent_step}")
 
     if isinstance(agent_step, AgentAction):
+        print(f"*****agent_step is an instance of AgentAction*****")
         # extrapolate the tool to use
         tool_name = agent_step.tool
         tool_to_use = find_tool_by_names(tools, tool_name)
@@ -87,5 +103,19 @@ if __name__ == "__main__":
 
         observation = tool_to_use.func(str(tool_input))
         print(f"{observation}")
+        intermediate_steps.append((agent_step, str(observation)))
+
+    # invoke the chain
+    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
+        {
+            "input": "what is the text length of 'Langchain Expression Language' in characters?",
+            "agent_scratchpad": intermediate_steps,
+        }
+    )
+
+    if isinstance(agent_step, AgentFinish):
+        print(f"*****agent_step is an instance of AgentFinish*****")
+        print(agent_step)
+        # print(agent_step.return_values)
 
 
