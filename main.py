@@ -67,6 +67,7 @@ if __name__ == "__main__":
     llm = ChatOpenAI(model="gpt-4.1-mini", # doesn't work on default model "gpt-3.5-turbo`
                      temperature=0.0,
                      stop=["\nObservation"], # stop generating text at this token
+                     callbacks=[AgentCallbackHandler()], # logs all the responses and calls to LLM
                      )
 
     # create an empty list to keep track of the history of our agent
@@ -87,6 +88,10 @@ if __name__ == "__main__":
     # invoke the chain
     # res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
     # print(res)
+    # ─── first turn ──────────────────────────────────────────────────────────────────
+    # print("=== agent_scratchpad BEFORE 1st LLM call ===")
+    # print(format_log_to_str(intermediate_steps))
+    # print("============================================")
     agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
         {
             "input": "what is the text length of 'Langchain Expression Language' in characters?",
@@ -96,7 +101,7 @@ if __name__ == "__main__":
     print(f"agent_step={agent_step}")
 
     if isinstance(agent_step, AgentAction):
-        print(f"*****agent_step is an instance of AgentAction*****")
+        print(f"*****\n*****agent_step is an instance of AgentAction*****\n*****")
         # extrapolate the tool to use
         tool_name = agent_step.tool
         tool_to_use = find_tool_by_names(tools, tool_name)
@@ -108,6 +113,10 @@ if __name__ == "__main__":
         intermediate_steps.append((agent_step, str(observation)))
 
     # invoke the chain
+    # ─── second turn ─────────────────────────────────────────────────────────────────
+    # print("=== agent_scratchpad BEFORE 2nd LLM call ===")
+    # print(format_log_to_str(intermediate_steps))
+    # print("============================================")
     agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
         {
             "input": "what is the text length of 'Langchain Expression Language' in characters?",
@@ -116,8 +125,13 @@ if __name__ == "__main__":
     )
 
     if isinstance(agent_step, AgentFinish):
-        print(f"*****agent_step is an instance of AgentFinish*****")
-        print(agent_step)
-        # print(agent_step.return_values)
+        print(f"*****\n*****agent_step is an instance of AgentFinish*****\n*****")
+        #print(agent_step)
+        print(agent_step.return_values)
+
+    # print("=== FINAL agent_scratchpad ===")
+    # print(format_log_to_str(intermediate_steps))
+
+
 
 
