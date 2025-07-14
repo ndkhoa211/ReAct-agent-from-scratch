@@ -42,19 +42,25 @@ if __name__ == "__main__":
     Begin!
 
     Question: {input}
-    Thought: {agent_scratchpad}
+    Thought:
     """
 
     # we only partially initialize the prompt with `tools` and `tool_names`
     # this prompt is not complete yet
     # because we haven't supplied it with our question (as a dict)
-    prompt = (PromptTemplate.from_template(template=template).
-              partial(tools=render_text_description(tools), # cannot apply tool list directly, LLM only receives text inputs
-                      tool_names=", ".join([t.name for t in tools])))
+    prompt = PromptTemplate.from_template(template=template).partial(tools=render_text_description(tools), # cannot apply tool list directly, LLM only receives text inputs
+                                                                     tool_names=", ".join([t.name for t in tools]))
 
-    llm = ChatOpenAI(model="gpt-4.1-mini",
+    llm = ChatOpenAI(model="gpt-3.5-turbo", # doesn't work on later models like "gpt-4.1-mini`
                      temperature=0.0,
                      stop=["\nObservation"], # stop generating text at this token
                      )
 
+    agent = {"input": lambda x: x["input"]} | prompt | llm
+    # now populate the input placeholder
+    # lambda function accessing the values of dict
+
+    # invoke the chain
+    res = agent.invoke({"input": "what is the text length of 'Langchain Expression Language' in characters?"})
+    print(res.content)
 
