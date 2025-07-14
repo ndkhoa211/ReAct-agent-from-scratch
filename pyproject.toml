@@ -1,0 +1,16 @@
+[project]
+name = "react-agent-from-scratch"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain>=0.3.26",
+    "langchain-openai>=0.3.27",
+    "python-dotenv>=1.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+]
