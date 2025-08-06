@@ -1,5 +1,4 @@
-from typing import Dict, Any, List, Optional
-from uuid import UUID
+from typing import Dict, Any, List
 
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import LLMResult

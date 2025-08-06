@@ -27,7 +27,7 @@ uv venv          # creates .venv
 source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 
 # 3. install runtime deps
-uv pip install -e .
+uv sync
 
 # 4. add your OpenAI key
 echo "OPENAI_API_KEY=sk-..." > .env
@@ -58,24 +58,41 @@ Human:
 
     Begin!
 
-    Question: what is the text length of 'Langchain Expression Language' in characters?
+    Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?
     Thought: 
     
 **********
 ***LLM Response:***
-Question: what is the text length of 'Langchain Expression Language' in characters?
-Thought: I need to find the number of characters in the text 'Langchain Expression Language'.
+Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?
+Thought: I need to find the length of each text separately.
 Action: get_text_length
 Action Input: Langchain Expression Language
 **********
-agent_step=tool='get_text_length' tool_input='Langchain Expression Language' log="Question: what is the text length of 'Langchain Expression Language' in characters?\nThought: I need to find the number of characters in the text 'Langchain Expression Language'.\nAction: get_text_length\nAction Input: Langchain Expression Language"
+agent_step=
+tool='get_text_length' tool_input='Langchain Expression Language' log="Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?\nThought: I need to find the length of each text separately.\nAction: get_text_length\nAction Input: Langchain Expression Language"
 *****
 *****agent_step is an instance of AgentAction*****
 *****
 get_text_length enter with text='Langchain Expression Language'
+
+
+
+
 29
+
+
+
+
+Intermediate steps:
+ [(AgentAction(tool='get_text_length', tool_input='Langchain Expression Language', log="Question: what is t
+he text length of 'Langchain Expression Language' and 'Cohomology' in characters?\nThought: I need to find 
+the length of each text separately.\nAction: get_text_length\nAction Input: Langchain Expression Language"), '29')]
+
+
+
+
 ***Prompt to LLM was:***
-Human: 
+Human:
     Answer the following questions as best you can. You have access to the following tools:
 
     get_text_length(text: str) -> int - Returns the length of a text by characters
@@ -93,22 +110,115 @@ Human:
 
     Begin!
 
-    Question: what is the text length of 'Langchain Expression Language' in characters?
-    Thought: Question: what is the text length of 'Langchain Expression Language' in characters?
-Thought: I need to find the number of characters in the text 'Langchain Expression Language'.
+    Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?   
+    Thought: Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?
+Thought: I need to find the length of each text separately.
 Action: get_text_length
 Action Input: Langchain Expression Language
 Observation: 29
-Thought: 
-    
+Thought:
+
 **********
 ***LLM Response:***
-Thought: I now know the final answer
-Final Answer: The text length of 'Langchain Expression Language' is 29 characters.
+Action: get_text_length
+Action Input: Cohomology
 **********
-agent_step=return_values={'output': "The text length of 'Langchain Expression Language' is 29 characters."} log="Thought: I now know the final answer\nFinal Answer: The text length of 'Langchain Expression Language' is 29 characters."
+agent_step=
+tool='get_text_length' tool_input='Cohomology' log='Action: get_text_length\nAction Input: Cohomology'     
+*****
+*****agent_step is an instance of AgentAction*****
+*****
+get_text_length enter with text='Cohomology'
+
+
+
+
+10
+
+
+
+
+Intermediate steps:
+ [(AgentAction(tool='get_text_length', tool_input='Langchain Expression Language', log="Question: what is t
+he text length of 'Langchain Expression Language' and 'Cohomology' in characters?\nThought: I need to find 
+the length of each text separately.\nAction: get_text_length\nAction Input: Langchain Expression Language")
+, '29'), (AgentAction(tool='get_text_length', tool_input='Cohomology', log='Action: get_text_length\nAction Input: Cohomology'), '10')]
+
+
+
+
+***Prompt to LLM was:***
+Human:
+    Answer the following questions as best you can. You have access to the following tools:
+
+    get_text_length(text: str) -> int - Returns the length of a text by characters
+
+    Use the following format:
+
+    Question: the input question you must answer
+    Thought: you should always think about what to do
+    Action: the action to take, should be one of [get_text_length]
+    Action Input: the input to the action
+    Observation: the result of the action
+    ... (this Thought/Action/Action Input/Observation can repeat N times)
+    Thought: I now know the final answer
+    Final Answer: the final answer to the original input question
+
+    Begin!
+
+    Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?   
+    Thought: Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?
+Thought: I need to find the length of each text separately.
+Action: get_text_length
+Action Input: Langchain Expression Language
+Observation: 29
+Thought: Action: get_text_length
+Action Input: Cohomology
+Observation: 10
+Thought:
+
+**********
+***LLM Response:***
+Thought: I now know the lengths of both texts.
+Final Answer: The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters.
+**********
+agent_step=
+return_values={'output': "The text length of 'Langchain Expression Language' is 29 characters, and the text
+ length of 'Cohomology' is 10 characters."} log="Thought: I now know the lengths of both texts.\nFinal Answ
+er: The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters."
 *****
 *****agent_step is an instance of AgentFinish*****
 *****
-{'output': "The text length of 'Langchain Expression Language' is 29 characters."}
+
+
+
+
+return_values={'output': "The text length of 'Langchain Expression Language' is 29 characters, and the text
+
+
+
+
+return_values={'output': "The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters."} log="Thought: I now know the lengths of both texts.\nFinal Answer: The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters."
+<class 'langchain_core.agents.AgentFinish'>
+
+
+
+
+{'output': "The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters."}
+
+
+
+
+=== FINAL agent_scratchpad ===
+
+
+
+
+[(AgentAction(tool='get_text_length', tool_input='Langchain Expression Language', 
+    log="Question: what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?\nThought: I need to find the length of each text separately.\nAction: get_text_length\nAction Input: Langchain Expression Language"), '29'), 
+(AgentAction(tool='get_text_length', tool_input='Cohomology', 
+    log='Action: get_text_length\nAction Input: Cohomology'), '10'), 
+AgentFinish(return_values={'output': "The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters."}, 
+    log="Thought: I now know the lengths of both texts.\nFinal Answer: The text length of 'Langchain Expression Language' is 29 characters, and the text length of 'Cohomology' is 10 characters.")]
+
 ```

@@ -4,6 +4,9 @@ from langchain.prompts import PromptTemplate
 from langchain.tools.render import render_text_description
 from langchain_openai import ChatOpenAI
 from langchain.agents.output_parsers import ReActSingleInputOutputParser
+# this parser turns llm's ReAct-style text into either an
+# AgentAction (when llm produced "Action:" + "Action Imput:") or an
+# AgentFinish (when llm produced "Final Answer:")
 from typing import Union, List
 from langchain.schema import AgentAction, AgentFinish
 from langchain.tools import Tool
@@ -77,7 +80,7 @@ if __name__ == "__main__":
             {
                 "input": lambda x: x["input"],
                 "agent_scratchpad": lambda x: format_log_to_str(x["agent_scratchpad"]),
-            }
+            } # lambdas pick fields from the dict we pass to .invoke()
             | prompt
             | llm
             | ReActSingleInputOutputParser()
@@ -85,37 +88,56 @@ if __name__ == "__main__":
     # now populate the input placeholder
     # lambda function accessing the values of dict
 
+    # How does the LLM “know” whether to return AgentAction or AgentFinish?
+    # If it emits another "Action:" block, the parser returns an AgentAction.
+    # If it emits "Final Answer:" block, the parser returns an AgentFinish
+
     # create a while loop
     agent_step = ""
     while not isinstance(agent_step, AgentFinish):
         agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
             {
-                "input": "what is the text length of 'Langchain Expression Language' in characters?",
+                "input": "what is the text length of 'Langchain Expression Language' and 'Cohomology' in characters?",
                 "agent_scratchpad": intermediate_steps,
             }
         )
-        print(f"agent_step={agent_step}")
+        print(f"agent_step=\n{agent_step}")
 
         if isinstance(agent_step, AgentAction):
             print(f"*****\n*****agent_step is an instance of AgentAction*****\n*****")
-            # extrapolate the tool to use
-            tool_name = agent_step.tool
+            # extract the desired tool name
+            tool_name = agent_step.tool # .tool from AgentAction
+            # extract tool from tool name string
             tool_to_use = find_tool_by_names(tools, tool_name)
-            # run the tool
-            tool_input = agent_step.tool_input
+            # extract tool input string
+            tool_input = agent_step.tool_input # .tool_input from AgentAction
 
             observation = tool_to_use.func(str(tool_input))
+            # .func() is attribute from Tool, it runs the tool with provided input
+
+            print("\n\n\n")
             print(f"{observation}")
+            print("\n\n\n")
             intermediate_steps.append((agent_step, str(observation)))
+            print(f"Intermediate steps:\n {intermediate_steps}")
+            print("\n\n\n")
 
 
     if isinstance(agent_step, AgentFinish):
         print(f"*****\n*****agent_step is an instance of AgentFinish*****\n*****")
-        #print(agent_step)
-        print(agent_step.return_values)
+        print("\n\n\n")
+        print(agent_step)
+        print(type(agent_step))
+        print("\n\n\n")
+        print(agent_step.return_values) # .return_values from AgentFinish
+        intermediate_steps.append(agent_step)
 
-    # print("=== FINAL agent_scratchpad ===")
-    # print(format_log_to_str(intermediate_steps))
+    print("\n\n\n")
+    print("=== FINAL agent_scratchpad ===")
+    print("\n\n\n")
+    print(intermediate_steps)
+    print("\n\n\n")
+    #print(format_log_to_str(intermediate_steps))
 
 
 
